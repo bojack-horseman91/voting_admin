@@ -1,0 +1,9 @@
+{
+  "name": "ElectionManager Pro",
+  "description": "A comprehensive election management system for administrators to manage upazillas, unions, and voting centers with AI-powered assistance.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}
