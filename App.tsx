@@ -4,7 +4,7 @@ import * as DB from './services/db';
 import Layout from './components/Layout';
 import SuperAdmin from './components/SuperAdmin';
 import UpazillaAdmin from './components/UpazillaAdmin';
-import { Shield, User } from 'lucide-react';
+import { Shield } from 'lucide-react';
 
 const App: React.FC = () => {
   const [session, setSession] = useState<UserSession | null>(null);
