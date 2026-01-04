@@ -1,6 +1,6 @@
 import React from 'react';
 import { UserRole, UserSession } from '../types';
-import { LogOut, LayoutDashboard, Database, MapPin, User, Menu, X } from 'lucide-react';
+import { LogOut, LayoutDashboard, Database, Menu, X } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
