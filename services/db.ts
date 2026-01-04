@@ -1,7 +1,11 @@
 import { Upazilla, Union, VotingCenter } from '../types';
 
-// The server now runs on 3000, Vite (frontend) usually runs on 5173
-const API_URL = 'http://localhost:3000/api';
+// Declare process for TS environment to avoid 'Cannot find name' errors when building
+declare const process: { env: { IMGBB_KEY?: string } };
+
+// In development, we hit the specific port 3000. 
+// In production (when served by Express), we use the relative path '/api'.
+const API_URL = (import.meta as any).env.MODE === 'development' ? 'http://localhost:3000/api' : '/api';
 
 // Helper to handle API requests
 const apiCall = async (endpoint: string, method: string = 'GET', body?: any, upazillaId?: string) => {
@@ -65,8 +69,10 @@ export const updateCenter = async (center: VotingCenter, upazillaId: string): Pr
     await apiCall(`/centers/${center.id}`, 'PUT', center, upazillaId);
 };
 
-export const deleteCenter = async (id: string, upazillaId: string): Promise<void> => {
+export const deleteCenter = async (_id: string, _upazillaId: string): Promise<void> => {
     // Implement delete in server if needed
+    // Variables prefixed with _ to avoid unused variable warnings
+    return;
 }
 
 // --- Image Utility ---

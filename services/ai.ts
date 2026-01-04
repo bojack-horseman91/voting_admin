@@ -1,6 +1,9 @@
 import { GoogleGenAI } from "@google/genai";
 import { VotingCenter } from '../types';
 
+// Declare process to avoid 'Cannot find name' TS errors
+declare const process: { env: { API_KEY?: string } };
+
 // Initialize Gemini Client safely
 // process.env is injected by Vite config, but we default to empty string to prevent init crashes
 const apiKey = process.env.API_KEY || '';
