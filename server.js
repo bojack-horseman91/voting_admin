@@ -18,7 +18,7 @@ app.use(cors({
 // Reduce limit back to 5mb as we are now using ImgBB for images
 app.use(express.json({ limit: '5mb' })); 
 
-const MAIN_DB_URI = process.env.MONGODB_URL || "mongodb+srv://election_manager:7sHcm5XNdTLBKhy@cluster0.9fv57wd.mongodb.net/UNOs";
+const MAIN_DB_URI = process.env.MONGODB_URL;
 const PORT = process.env.PORT || 3000;
 
 // --- Main Database Connection (For Super Admin & Upazilla Directory) ---
