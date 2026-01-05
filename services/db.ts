@@ -1,4 +1,4 @@
-import { Upazilla, Union, VotingCenter } from '../types';
+import { Upazilla, Union, VotingCenter, ImportantPerson } from '../types';
 
 // Declare process for TS environment
 declare const process: { env: { IMGBB_KEY?: string; NODE_ENV?: string } };
@@ -81,6 +81,25 @@ export const deleteCenter = async (_id: string, _upazillaId: string): Promise<vo
     // Implement delete in server if needed
     return;
 }
+
+// --- Important Persons Operations ---
+
+export const getImportantPersons = async (upazillaId: string): Promise<ImportantPerson[]> => {
+    return apiCall('/important-persons', 'GET', undefined, upazillaId);
+};
+
+export const createImportantPerson = async (person: ImportantPerson, upazillaId: string): Promise<void> => {
+    await apiCall('/important-persons', 'POST', person, upazillaId);
+};
+
+export const updateImportantPerson = async (person: ImportantPerson, upazillaId: string): Promise<void> => {
+    await apiCall(`/important-persons/${person.id}`, 'PUT', person, upazillaId);
+};
+
+export const deleteImportantPerson = async (id: string, upazillaId: string): Promise<void> => {
+    await apiCall(`/important-persons/${id}`, 'DELETE', undefined, upazillaId);
+};
+
 
 // --- Image Utility ---
 
