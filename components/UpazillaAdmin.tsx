@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Union, VotingCenter, CenterCategory, AreaType, ImportantPerson, PersonCategory } from '../types';
+import { Union, VotingCenter, CenterCategory, AreaType, ImportantPerson, PersonCategory, Upazilla } from '../types';
 import * as DB from '../services/db';
 import * as AI from '../services/ai';
 import { Plus, MapPin, Users, Upload, ShieldCheck, FileText, BrainCircuit, Edit2, CheckCircle2, X, AlertTriangle, Shield, Building2, Landmark, Phone, Contact, ArrowUpFromLine, Trash2 } from 'lucide-react';
@@ -10,6 +10,7 @@ interface Props {
 
 const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
   const [activeTab, setActiveTab] = useState<'unions' | 'centers' | 'contacts'>('unions');
+  const [currentUpazilla, setCurrentUpazilla] = useState<Upazilla | null>(null);
   const [unions, setUnions] = useState<Union[]>([]);
   const [centers, setCenters] = useState<VotingCenter[]>([]); // Note: These are now "lite" objects
   const [importantPersons, setImportantPersons] = useState<ImportantPerson[]>([]);
@@ -57,6 +58,12 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
 
   const fetchData = async () => {
     try {
+        // Fetch current upazilla config (to get specific ImgBB key if it exists)
+        if (!currentUpazilla) {
+            const uConfig = await DB.getUpazilla(upazillaId);
+            setCurrentUpazilla(uConfig);
+        }
+
         const u = await DB.getUnions(upazillaId);
         setUnions(u);
         
@@ -190,11 +197,12 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
       if (selectedImageFile) {
           try {
               setUploadingImg(true);
-              finalImageUrl = await DB.uploadImageToImgBB(selectedImageFile);
+              // Pass the custom key from the current upazilla config if available
+              finalImageUrl = await DB.uploadImageToImgBB(selectedImageFile, currentUpazilla?.imgbbKey);
               setUploadingImg(false);
           } catch (error) {
               console.error(error);
-              alert("Failed to upload image to ImgBB. Please check your API Key.");
+              alert("Failed to upload image. Please check API Key configuration.");
               setUploadingImg(false);
               setIsSubmitting(false);
               return;
