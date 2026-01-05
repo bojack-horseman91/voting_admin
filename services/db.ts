@@ -38,8 +38,16 @@ export const getUpazillas = async (): Promise<Upazilla[]> => {
     return apiCall('/upazillas');
 };
 
+export const getUpazilla = async (id: string): Promise<Upazilla> => {
+    return apiCall(`/upazillas/${id}`);
+};
+
 export const createUpazilla = async (upazilla: Upazilla): Promise<void> => {
     await apiCall('/upazillas', 'POST', upazilla);
+};
+
+export const updateUpazilla = async (upazilla: Upazilla): Promise<void> => {
+    await apiCall(`/upazillas/${upazilla.id}`, 'PUT', upazilla);
 };
 
 export const deleteUpazilla = async (id: string): Promise<void> => {
@@ -104,10 +112,12 @@ export const deleteImportantPerson = async (id: string, upazillaId: string): Pro
 // --- Image Utility ---
 
 // Uploads image to ImgBB and returns the hosted URL
-export const uploadImageToImgBB = async (file: File): Promise<string> => {
-    const apiKey = process.env.IMGBB_KEY;
+export const uploadImageToImgBB = async (file: File, customKey?: string): Promise<string> => {
+    // Prioritize specific Upazilla key, fallback to env variable
+    const apiKey = customKey || process.env.IMGBB_KEY;
+    
     if (!apiKey) {
-        throw new Error("IMGBB_KEY is missing in environment variables");
+        throw new Error("ImgBB API Key is missing. Please contact Super Admin.");
     }
 
     const formData = new FormData();
