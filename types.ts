@@ -20,10 +20,13 @@ export interface VotingCenter {
   comment?: string;
 }
 
+export type AreaType = 'Union' | 'Pourashava';
+
 export interface Union {
   id: string;
   upazillaId: string;
   name: string;
+  type?: AreaType;
 }
 
 export interface Upazilla {

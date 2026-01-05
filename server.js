@@ -60,7 +60,8 @@ const UpazillaModel = mainConnection.model('Upazilla', UpazillaSchema);
 const UnionSchema = new mongoose.Schema({
     id: String,
     upazillaId: String,
-    name: String
+    name: String,
+    type: { type: String, default: 'Union' } // 'Union' or 'Pourashava'
 });
 
 const OfficerSchema = new mongoose.Schema({
