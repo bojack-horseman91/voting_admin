@@ -1,9 +1,3 @@
-export enum UserRole {
-  SUPER_ADMIN = 'SUPER_ADMIN',
-  UPAZILLA_ADMIN = 'UPAZILLA_ADMIN',
-  GUEST = 'GUEST'
-}
-
 export interface Officer {
   name: string;
   position: string;
@@ -15,11 +9,11 @@ export interface VotingCenter {
   unionId: string;
   name: string;
   location: string;
-  googleMapLink: string;
+  googleMapLink?: string;
   imageUrl?: string;
-  presidingOfficer: Officer;
-  assistantPresidingOfficer: Officer;
-  policeOfficer: Officer;
+  presidingOfficer?: Officer;
+  assistantPresidingOfficer?: Officer;
+  policeOfficer?: Officer;
 }
 
 export interface Union {
@@ -32,13 +26,18 @@ export interface Upazilla {
   id: string;
   name: string;
   username: string;
-  password: string; // In a real app, this would be hashed
   mongoDbUrl: string;
   port: string;
+  password?: string;
+}
+
+export enum UserRole {
+  SUPER_ADMIN = 'SUPER_ADMIN',
+  UPAZILLA_ADMIN = 'UPAZILLA_ADMIN',
 }
 
 export interface UserSession {
-  role: UserRole;
-  upazillaId?: string; // If logged in as upazilla admin
   username: string;
+  role: UserRole;
+  upazillaId?: string;
 }

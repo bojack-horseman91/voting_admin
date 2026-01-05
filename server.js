@@ -179,6 +179,7 @@ app.post('/api/unions', async (req, res) => {
     }
 });
 
+// OPTIMIZED: List View (Name & Address only)
 app.get('/api/centers', async (req, res) => {
     try {
         const upazillaId = req.headers['x-upazilla-id'];
@@ -186,8 +187,26 @@ app.get('/api/centers', async (req, res) => {
         const conn = await getUpazillaConnection(upazillaId);
         const Center = conn.model('Center');
 
-        const centers = await Center.find({ unionId });
+        // Projection: Only return id, name, location, unionId
+        // This makes the API call much faster
+        const centers = await Center.find({ unionId }).select('id name location unionId');
         res.json(centers);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// NEW ENDPOINT: Detail View (Full Info)
+app.get('/api/centers/:id', async (req, res) => {
+    try {
+        const upazillaId = req.headers['x-upazilla-id'];
+        const conn = await getUpazillaConnection(upazillaId);
+        const Center = conn.model('Center');
+
+        const center = await Center.findOne({ id: req.params.id });
+        if (!center) return res.status(404).json({ error: "Center not found" });
+        
+        res.json(center);
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
@@ -233,8 +252,6 @@ if (fs.existsSync(distPath)) {
         if (!req.path.startsWith('/api')) {
             res.sendFile(path.join(distPath, 'index.html'));
         } else {
-             // This JSON error is what you were seeing.
-             // It means a request started with /api but didn't match any route above.
              res.status(404).json({ error: "API route not found" });
         }
     });
