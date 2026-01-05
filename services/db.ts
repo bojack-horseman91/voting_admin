@@ -1,4 +1,4 @@
-import { Upazilla, Union, VotingCenter, ImportantPerson } from '../types';
+import { Upazilla, Union, VotingCenter, ImportantPerson, Markha } from '../types';
 
 // Declare process for TS environment
 declare const process: { env: { IMGBB_KEY?: string; NODE_ENV?: string } };
@@ -106,6 +106,24 @@ export const updateImportantPerson = async (person: ImportantPerson, upazillaId:
 
 export const deleteImportantPerson = async (id: string, upazillaId: string): Promise<void> => {
     await apiCall(`/important-persons/${id}`, 'DELETE', undefined, upazillaId);
+};
+
+// --- Markha (Symbols) Operations ---
+
+export const getMarkhas = async (upazillaId: string): Promise<Markha[]> => {
+    return apiCall('/markhas', 'GET', undefined, upazillaId);
+};
+
+export const createMarkha = async (markha: Markha, upazillaId: string): Promise<void> => {
+    await apiCall('/markhas', 'POST', markha, upazillaId);
+};
+
+export const updateMarkha = async (markha: Markha, upazillaId: string): Promise<void> => {
+    await apiCall(`/markhas/${markha.id}`, 'PUT', markha, upazillaId);
+};
+
+export const deleteMarkha = async (id: string, upazillaId: string): Promise<void> => {
+    await apiCall(`/markhas/${id}`, 'DELETE', undefined, upazillaId);
 };
 
 
