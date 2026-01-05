@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Union, VotingCenter } from '../types';
 import * as DB from '../services/db';
 import * as AI from '../services/ai';
-import { Plus, MapPin, Users, Upload, ExternalLink, ShieldCheck, FileText, BrainCircuit, Edit2, CheckCircle2, X, List } from 'lucide-react';
+import { Plus, MapPin, Users, Upload, ShieldCheck, FileText, BrainCircuit, Edit2, CheckCircle2, X } from 'lucide-react';
 
 interface Props {
   upazillaId: string;
