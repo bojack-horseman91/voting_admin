@@ -52,7 +52,8 @@ const UpazillaSchema = new mongoose.Schema({
   username: String,
   password: String, // In production, hash this!
   mongoDbUrl: String,
-  port: String
+  port: String,
+  imgbbKey: String
 });
 const UpazillaModel = mainConnection.model('Upazilla', UpazillaSchema);
 
@@ -144,11 +145,31 @@ app.get('/api/upazillas', async (req, res) => {
     }
 });
 
+// Get single upazilla details (Internal use for loading configs)
+app.get('/api/upazillas/:id', async (req, res) => {
+    try {
+        const upazilla = await UpazillaModel.findOne({ id: req.params.id });
+        if(!upazilla) return res.status(404).json({error: "Not found"});
+        res.json(upazilla);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 app.post('/api/upazillas', async (req, res) => {
     try {
         const newUpazilla = new UpazillaModel(req.body);
         await newUpazilla.save();
         res.json(newUpazilla);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.put('/api/upazillas/:id', async (req, res) => {
+    try {
+        await UpazillaModel.findOneAndUpdate({ id: req.params.id }, req.body);
+        res.json({ success: true });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }

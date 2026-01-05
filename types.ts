@@ -47,6 +47,7 @@ export interface Upazilla {
   mongoDbUrl: string;
   port: string;
   password?: string;
+  imgbbKey?: string;
 }
 
 export enum UserRole {
