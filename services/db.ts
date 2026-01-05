@@ -1,11 +1,14 @@
 import { Upazilla, Union, VotingCenter } from '../types';
 
-// Declare process for TS environment to avoid 'Cannot find name' errors when building
-declare const process: { env: { IMGBB_KEY?: string } };
+// Declare process for TS environment
+declare const process: { env: { IMGBB_KEY?: string; NODE_ENV?: string } };
+
+// Use process.env.NODE_ENV which is injected by Vite at build time
+const isDevelopment = process.env.NODE_ENV === 'development';
 
 // In development, we hit the specific port 3000. 
 // In production (when served by Express), we use the relative path '/api'.
-const API_URL = (import.meta as any).env.MODE === 'development' ? 'http://localhost:3000/api' : '/api';
+const API_URL = isDevelopment ? 'http://localhost:3000/api' : '/api';
 
 // Helper to handle API requests
 const apiCall = async (endpoint: string, method: string = 'GET', body?: any, upazillaId?: string) => {
@@ -56,9 +59,14 @@ export const createUnion = async (union: Union): Promise<void> => {
 // --- Center Operations (Upazilla Admin) ---
 
 export const getCenters = async (unionId: string, upazillaId: string): Promise<VotingCenter[]> => {
-    // Note: We need to pass unionId as a query param, but the header determines the DB
+    // Returns LITE version: [{id, name, location, unionId}]
     const qs = new URLSearchParams({ unionId }).toString();
     return apiCall(`/centers?${qs}`, 'GET', undefined, upazillaId);
+};
+
+export const getCenterDetails = async (centerId: string, upazillaId: string): Promise<VotingCenter> => {
+    // Returns FULL version: Includes officers, images, etc.
+    return apiCall(`/centers/${centerId}`, 'GET', undefined, upazillaId);
 };
 
 export const createCenter = async (center: VotingCenter, upazillaId: string): Promise<void> => {
@@ -71,7 +79,6 @@ export const updateCenter = async (center: VotingCenter, upazillaId: string): Pr
 
 export const deleteCenter = async (_id: string, _upazillaId: string): Promise<void> => {
     // Implement delete in server if needed
-    // Variables prefixed with _ to avoid unused variable warnings
     return;
 }
 
