@@ -18,6 +18,8 @@ export interface VotingCenter {
   policeOfficer?: Officer;
   category?: CenterCategory;
   comment?: string;
+  maleVoters?: number;
+  femaleVoters?: number;
 }
 
 export type AreaType = 'Union' | 'Pourashava';

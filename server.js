@@ -82,7 +82,9 @@ const CenterSchema = new mongoose.Schema({
     assistantPresidingOfficer: OfficerSchema,
     policeOfficer: OfficerSchema,
     category: { type: String, default: 'safe' },
-    comment: { type: String, default: '' }
+    comment: { type: String, default: '' },
+    maleVoters: { type: Number, default: 0 },
+    femaleVoters: { type: Number, default: 0 }
 });
 
 const ImportantPersonSchema = new mongoose.Schema({
