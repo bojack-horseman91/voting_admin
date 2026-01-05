@@ -1,4 +1,4 @@
-import { Upazilla, Union, VotingCenter, ImportantPerson } from '../types';
+import { Upazilla, Union, VotingCenter, ImportantPerson, Markha } from '../types';
 
 // --- API CONFIGURATION ---
 
@@ -52,4 +52,8 @@ export const getCenterDetails = async (centerId: string, upazillaId: string): Pr
 
 export const getImportantPersons = async (upazillaId: string): Promise<ImportantPerson[]> => {
   return apiCall('/important-persons', upazillaId);
+};
+
+export const getMarkhas = async (upazillaId: string): Promise<Markha[]> => {
+  return apiCall('/markhas', upazillaId);
 };
