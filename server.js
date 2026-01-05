@@ -84,6 +84,15 @@ const CenterSchema = new mongoose.Schema({
     comment: { type: String, default: '' }
 });
 
+const ImportantPersonSchema = new mongoose.Schema({
+    id: String,
+    name: String,
+    designation: String,
+    phone: String,
+    category: String, // 'admin', 'police', 'defence'
+    ranking: { type: Number, default: 0 }
+});
+
 // --- Helper: Get Connection for specific Upazilla ---
 const connectionCache = {};
 
@@ -103,6 +112,7 @@ const getUpazillaConnection = async (upazillaId) => {
 
     conn.model('Union', UnionSchema);
     conn.model('Center', CenterSchema);
+    conn.model('ImportantPerson', ImportantPersonSchema);
 
     connectionCache[upazilla.id] = conn;
     return conn;
@@ -235,6 +245,62 @@ app.put('/api/centers/:id', async (req, res) => {
         const Center = conn.model('Center');
 
         await Center.findOneAndUpdate({ id: req.params.id }, req.body);
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// --- IMPORTANT PERSONS ROUTES ---
+
+app.get('/api/important-persons', async (req, res) => {
+    try {
+        const upazillaId = req.headers['x-upazilla-id'];
+        const conn = await getUpazillaConnection(upazillaId);
+        const ImportantPerson = conn.model('ImportantPerson');
+
+        // Sort by ranking (ascending)
+        const persons = await ImportantPerson.find().sort({ ranking: 1 });
+        res.json(persons);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/important-persons', async (req, res) => {
+    try {
+        const upazillaId = req.headers['x-upazilla-id'];
+        const conn = await getUpazillaConnection(upazillaId);
+        const ImportantPerson = conn.model('ImportantPerson');
+
+        const newPerson = new ImportantPerson(req.body);
+        await newPerson.save();
+        res.json(newPerson);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.put('/api/important-persons/:id', async (req, res) => {
+    try {
+        const upazillaId = req.headers['x-upazilla-id'];
+        const conn = await getUpazillaConnection(upazillaId);
+        const ImportantPerson = conn.model('ImportantPerson');
+
+        await ImportantPerson.findOneAndUpdate({ id: req.params.id }, req.body);
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.delete('/api/important-persons/:id', async (req, res) => {
+    try {
+        const upazillaId = req.headers['x-upazilla-id'];
+        const conn = await getUpazillaConnection(upazillaId);
+        const ImportantPerson = conn.model('ImportantPerson');
+
+        await ImportantPerson.deleteOne({ id: req.params.id });
         res.json({ success: true });
     } catch (e) {
         res.status(500).json({ error: e.message });

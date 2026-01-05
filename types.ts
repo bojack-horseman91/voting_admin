@@ -29,6 +29,17 @@ export interface Union {
   type?: AreaType;
 }
 
+export type PersonCategory = 'admin' | 'police' | 'defence';
+
+export interface ImportantPerson {
+  id: string;
+  name: string;
+  designation: string;
+  phone: string;
+  category: PersonCategory;
+  ranking: number;
+}
+
 export interface Upazilla {
   id: string;
   name: string;
