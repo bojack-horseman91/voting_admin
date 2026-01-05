@@ -4,6 +4,8 @@ export interface Officer {
   phone: string;
 }
 
+export type CenterCategory = 'safe' | 'moderate safe' | 'danger';
+
 export interface VotingCenter {
   id: string;
   unionId: string;
@@ -14,6 +16,8 @@ export interface VotingCenter {
   presidingOfficer?: Officer;
   assistantPresidingOfficer?: Officer;
   policeOfficer?: Officer;
+  category?: CenterCategory;
+  comment?: string;
 }
 
 export interface Union {

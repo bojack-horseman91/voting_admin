@@ -78,7 +78,9 @@ const CenterSchema = new mongoose.Schema({
     imageUrl: String,
     presidingOfficer: OfficerSchema,
     assistantPresidingOfficer: OfficerSchema,
-    policeOfficer: OfficerSchema
+    policeOfficer: OfficerSchema,
+    category: { type: String, default: 'safe' },
+    comment: { type: String, default: '' }
 });
 
 // --- Helper: Get Connection for specific Upazilla ---
@@ -179,7 +181,7 @@ app.post('/api/unions', async (req, res) => {
     }
 });
 
-// OPTIMIZED: List View (Name & Address only)
+// OPTIMIZED: List View (Name, Address & Category only)
 app.get('/api/centers', async (req, res) => {
     try {
         const upazillaId = req.headers['x-upazilla-id'];
@@ -187,9 +189,8 @@ app.get('/api/centers', async (req, res) => {
         const conn = await getUpazillaConnection(upazillaId);
         const Center = conn.model('Center');
 
-        // Projection: Only return id, name, location, unionId
-        // This makes the API call much faster
-        const centers = await Center.find({ unionId }).select('id name location unionId');
+        // Projection: Return essential fields for list view including category
+        const centers = await Center.find({ unionId }).select('id name location unionId category');
         res.json(centers);
     } catch (e) {
         res.status(500).json({ error: e.message });
