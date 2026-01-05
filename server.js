@@ -15,14 +15,21 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 // --- Robust CORS Configuration ---
+// Allow '*' to ensure mobile apps (Emulator/Device) can connect without origin issues during dev
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+    origin: '*', 
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'x-upazilla-id'] 
 }));
 
-// Reduce limit back to 5mb as we are now using ImgBB for images
-app.use(express.json({ limit: '5mb' })); 
+// Request Logger Middleware (Helps debug routes in Render logs)
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+});
+
+// Increase limit to 50mb to handle large image payloads if necessary
+app.use(express.json({ limit: '50mb' })); 
 
 const MAIN_DB_URI = process.env.MONGODB_URL || "mongodb+srv://election_manager:7sHcm5XNdTLBKhy@cluster0.9fv57wd.mongodb.net/UNOs";
 const PORT = process.env.PORT || 3000;
@@ -100,6 +107,20 @@ const getUpazillaConnection = async (upazillaId) => {
 
 
 // --- ROUTES ---
+
+// Health Check Route (Fixes the "API route not found" on base URL)
+app.get('/api', (req, res) => {
+    res.json({
+        status: 'online',
+        message: 'ElectionManager Pro API is running',
+        documentation: 'https://github.com/your-repo/blob/main/API_DOCUMENTATION.md',
+        endpoints: [
+            '/api/upazillas',
+            '/api/unions',
+            '/api/centers'
+        ]
+    });
+});
 
 app.get('/api/upazillas', async (req, res) => {
     try {
@@ -212,16 +233,18 @@ if (fs.existsSync(distPath)) {
         if (!req.path.startsWith('/api')) {
             res.sendFile(path.join(distPath, 'index.html'));
         } else {
+             // This JSON error is what you were seeing.
+             // It means a request started with /api but didn't match any route above.
              res.status(404).json({ error: "API route not found" });
         }
     });
 } else {
-    console.error(`❌ DIST FOLDER NOT FOUND at ${distPath}. Did the build fail?`);
+    // Development mode helper
     app.get('/', (req, res) => {
-        res.send('Backend is running, but frontend build (dist) is missing. Check deployment logs.');
+        res.send('Backend is running. For frontend, run `npm run dev` and access port 5173.');
     });
 }
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`\n🚀 Server running on http://localhost:${PORT}`);
 });
