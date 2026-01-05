@@ -63,7 +63,9 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
     googleMapLink: '',
     imageUrl: '',
     category: 'safe',
-    comment: ''
+    comment: '',
+    maleVoters: 0,
+    femaleVoters: 0
   });
   
   const [uploadingImg, setUploadingImg] = useState(false);
@@ -188,7 +190,9 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
           setCenterForm({ 
             ...fullCenter,
             category: fullCenter.category || 'safe',
-            comment: fullCenter.comment || ''
+            comment: fullCenter.comment || '',
+            maleVoters: fullCenter.maleVoters || 0,
+            femaleVoters: fullCenter.femaleVoters || 0
           });
           setImagePreviewUrl(fullCenter.imageUrl || '');
           setSelectedImageFile(null); 
@@ -215,7 +219,9 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
         location: '',
         googleMapLink: '',
         category: 'safe',
-        comment: ''
+        comment: '',
+        maleVoters: 0,
+        femaleVoters: 0
       });
       setSelectedImageFile(null);
       setImagePreviewUrl('');
@@ -255,7 +261,9 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
           assistantPresidingOfficer: centerForm.assistantPresidingOfficer as any,
           policeOfficer: centerForm.policeOfficer as any,
           category: centerForm.category as CenterCategory,
-          comment: centerForm.comment || ''
+          comment: centerForm.comment || '',
+          maleVoters: Number(centerForm.maleVoters) || 0,
+          femaleVoters: Number(centerForm.femaleVoters) || 0
       };
 
       try {
@@ -925,7 +933,36 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
                                         </div>
                                     </div>
 
-                                    {/* Security Status (New) */}
+                                    {/* Voter Statistics (New) */}
+                                    <div className="md:col-span-2 lg:col-span-3 pb-6 border-b border-gray-100">
+                                        <h4 className="font-semibold text-gray-800 text-sm mb-4 flex items-center gap-2">
+                                            <Users className="w-4 h-4 text-purple-600"/> Voter Demographics
+                                        </h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-2">
+                                                <label className="block text-sm font-medium text-gray-700">Male Voters</label>
+                                                <input 
+                                                    type="number"
+                                                    min="0"
+                                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+                                                    value={centerForm.maleVoters}
+                                                    onChange={e => setCenterForm({...centerForm, maleVoters: parseInt(e.target.value) || 0})}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="block text-sm font-medium text-gray-700">Female Voters</label>
+                                                <input 
+                                                    type="number"
+                                                    min="0"
+                                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+                                                    value={centerForm.femaleVoters}
+                                                    onChange={e => setCenterForm({...centerForm, femaleVoters: parseInt(e.target.value) || 0})}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Security Status */}
                                     <div className="md:col-span-2 lg:col-span-3 pb-6 border-b border-gray-100">
                                         <h4 className="font-semibold text-gray-800 text-sm mb-4 flex items-center gap-2">
                                             <ShieldCheck className="w-4 h-4 text-blue-600"/> Security Status
