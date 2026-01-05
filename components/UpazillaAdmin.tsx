@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Union, VotingCenter, CenterCategory } from '../types';
+import { Union, VotingCenter, CenterCategory, AreaType } from '../types';
 import * as DB from '../services/db';
 import * as AI from '../services/ai';
-import { Plus, MapPin, Users, Upload, ShieldCheck, FileText, BrainCircuit, Edit2, CheckCircle2, X, AlertTriangle, Shield } from 'lucide-react';
+import { Plus, MapPin, Users, Upload, ShieldCheck, FileText, BrainCircuit, Edit2, CheckCircle2, X, AlertTriangle, Shield, Building2, Landmark } from 'lucide-react';
 
 interface Props {
   upazillaId: string;
@@ -20,6 +20,7 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
 
   // Form States
   const [newUnionName, setNewUnionName] = useState('');
+  const [newAreaType, setNewAreaType] = useState<AreaType>('Union');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   
@@ -94,10 +95,12 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
     await DB.createUnion({
         id: crypto.randomUUID(),
         upazillaId,
-        name: newUnionName
+        name: newUnionName,
+        type: newAreaType
     });
     setNewUnionName('');
-    setSuccessMsg('Union created successfully in database!');
+    setNewAreaType('Union');
+    setSuccessMsg(`${newAreaType} created successfully in database!`);
     setIsSubmitting(false);
     fetchData();
   };
@@ -271,7 +274,7 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
                     onClick={() => setActiveTab('unions')}
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'unions' ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-50'}`}
                 >
-                    Manage Unions
+                    Manage Areas
                 </button>
                 <button
                     onClick={() => setActiveTab('centers')}
@@ -282,7 +285,7 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
             </div>
             {unions.length > 0 && (
                 <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500">Current Union:</span>
+                    <span className="text-sm text-gray-500">Current Area:</span>
                     <select 
                         value={selectedUnionId}
                         onChange={(e) => { setSelectedUnionId(e.target.value); setEditingCenterId(null); resetCenterForm(); }}
@@ -294,22 +297,49 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
             )}
         </div>
 
-        {/* --- UNIONS TAB --- */}
+        {/* --- UNIONS/POURASHAVAS TAB --- */}
         {activeTab === 'unions' && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="md:col-span-1 bg-white p-6 rounded-lg shadow-sm border border-gray-200 h-fit">
                     <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <Plus className="w-5 h-5 text-blue-500" /> Add Union
+                        <Plus className="w-5 h-5 text-blue-500" /> Add Area
                     </h3>
                     <form onSubmit={handleCreateUnion} className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Union Name</label>
+                            <label className="block text-sm font-medium text-gray-700">Area Type</label>
+                             <div className="mt-1 flex gap-4">
+                                <label className="inline-flex items-center">
+                                    <input 
+                                        type="radio" 
+                                        className="form-radio text-blue-600" 
+                                        name="areaType" 
+                                        value="Union" 
+                                        checked={newAreaType === 'Union'}
+                                        onChange={() => setNewAreaType('Union')}
+                                    />
+                                    <span className="ml-2 text-sm text-gray-700">Union</span>
+                                </label>
+                                <label className="inline-flex items-center">
+                                    <input 
+                                        type="radio" 
+                                        className="form-radio text-blue-600" 
+                                        name="areaType" 
+                                        value="Pourashava" 
+                                        checked={newAreaType === 'Pourashava'}
+                                        onChange={() => setNewAreaType('Pourashava')}
+                                    />
+                                    <span className="ml-2 text-sm text-gray-700">Pourashava</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Name</label>
                             <input
                                 type="text"
                                 value={newUnionName}
                                 onChange={e => setNewUnionName(e.target.value)}
                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
-                                placeholder="e.g. Char Union"
+                                placeholder={newAreaType === 'Union' ? "e.g. Char Union" : "e.g. Sadar Pourashava"}
                                 required
                             />
                         </div>
@@ -318,7 +348,7 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
                             disabled={isSubmitting}
                             className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
                         >
-                            {isSubmitting ? 'Saving...' : 'Create Union'}
+                            {isSubmitting ? 'Saving...' : 'Create Area'}
                         </button>
                     </form>
                     
@@ -342,8 +372,13 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
                      {unions.map(union => (
                          <div key={union.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex justify-between items-center">
                              <div>
-                                 <h4 className="font-bold text-gray-800">{union.name}</h4>
-                                 <p className="text-sm text-gray-500">Managed via Backend</p>
+                                 <div className="flex items-center gap-2">
+                                     <h4 className="font-bold text-gray-800">{union.name}</h4>
+                                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${union.type === 'Pourashava' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'}`}>
+                                         {union.type === 'Pourashava' ? <><Landmark className="w-3 h-3 inline mr-1"/>Pourashava</> : <><Building2 className="w-3 h-3 inline mr-1"/>Union</>}
+                                     </span>
+                                 </div>
+                                 <p className="text-sm text-gray-500 mt-1">Managed via Backend</p>
                              </div>
                              <div className="flex gap-2">
                                  <button onClick={() => { setSelectedUnionId(union.id); setActiveTab('centers'); }} className="text-sm text-blue-600 hover:text-blue-800 font-medium">
@@ -354,7 +389,7 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
                      ))}
                      {unions.length === 0 && (
                          <div className="text-center py-12 bg-white rounded-lg border border-dashed border-gray-300 text-gray-500">
-                             No unions found. Create one to get started.
+                             No areas found. Create a Union or Pourashava to get started.
                          </div>
                      )}
                 </div>
@@ -366,7 +401,7 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
             <div className="space-y-8">
                 {unions.length === 0 ? (
                      <div className="p-4 bg-yellow-50 text-yellow-800 rounded-md border border-yellow-200">
-                         Please create a Union first before adding voting centers.
+                         Please create a Union/Pourashava first before adding voting centers.
                      </div>
                 ) : (
                     <>
@@ -564,7 +599,7 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
                                     {centers.length === 0 && (
                                         <tr>
                                             <td colSpan={3} className="px-6 py-10 text-center text-gray-500 italic">
-                                                No voting centers added to this union yet.
+                                                No voting centers added to this union/pourashava yet.
                                             </td>
                                         </tr>
                                     )}
