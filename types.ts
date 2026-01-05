@@ -40,6 +40,14 @@ export interface ImportantPerson {
   ranking: number;
 }
 
+export interface Markha {
+  id: string;
+  name: string;      // Symbol Name (e.g., Boat, Sheaf of Paddy)
+  partyName: string; // e.g., Party A
+  nomineeName: string;
+  imageUrl: string;
+}
+
 export interface Upazilla {
   id: string;
   name: string;

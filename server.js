@@ -94,6 +94,14 @@ const ImportantPersonSchema = new mongoose.Schema({
     ranking: { type: Number, default: 0 }
 });
 
+const MarkhaSchema = new mongoose.Schema({
+    id: String,
+    name: String,
+    partyName: String,
+    nomineeName: String,
+    imageUrl: String
+});
+
 // --- Helper: Get Connection for specific Upazilla ---
 const connectionCache = {};
 
@@ -114,6 +122,7 @@ const getUpazillaConnection = async (upazillaId) => {
     conn.model('Union', UnionSchema);
     conn.model('Center', CenterSchema);
     conn.model('ImportantPerson', ImportantPersonSchema);
+    conn.model('Markha', MarkhaSchema);
 
     connectionCache[upazilla.id] = conn;
     return conn;
@@ -327,6 +336,62 @@ app.delete('/api/important-persons/:id', async (req, res) => {
         res.status(500).json({ error: e.message });
     }
 });
+
+// --- MARKHA (SYMBOLS) ROUTES ---
+
+app.get('/api/markhas', async (req, res) => {
+    try {
+        const upazillaId = req.headers['x-upazilla-id'];
+        const conn = await getUpazillaConnection(upazillaId);
+        const Markha = conn.model('Markha');
+
+        const markhas = await Markha.find();
+        res.json(markhas);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/markhas', async (req, res) => {
+    try {
+        const upazillaId = req.headers['x-upazilla-id'];
+        const conn = await getUpazillaConnection(upazillaId);
+        const Markha = conn.model('Markha');
+
+        const newMarkha = new Markha(req.body);
+        await newMarkha.save();
+        res.json(newMarkha);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.put('/api/markhas/:id', async (req, res) => {
+    try {
+        const upazillaId = req.headers['x-upazilla-id'];
+        const conn = await getUpazillaConnection(upazillaId);
+        const Markha = conn.model('Markha');
+
+        await Markha.findOneAndUpdate({ id: req.params.id }, req.body);
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.delete('/api/markhas/:id', async (req, res) => {
+    try {
+        const upazillaId = req.headers['x-upazilla-id'];
+        const conn = await getUpazillaConnection(upazillaId);
+        const Markha = conn.model('Markha');
+
+        await Markha.deleteOne({ id: req.params.id });
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 
 // --- SERVE FRONTEND (Production) ---
 const distPath = path.join(__dirname, 'dist');
