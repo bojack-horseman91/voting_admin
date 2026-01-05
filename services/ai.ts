@@ -20,8 +20,8 @@ export const generateSecurityPlan = async (center: VotingCenter): Promise<string
       Center Name: ${center.name}
       Location: ${center.location}
       Key Personnel:
-      - Presiding Officer: ${center.presidingOfficer.name} (${center.presidingOfficer.phone})
-      - Police Officer: ${center.policeOfficer.name}
+      - Presiding Officer: ${center.presidingOfficer?.name || 'N/A'} (${center.presidingOfficer?.phone || 'N/A'})
+      - Police Officer: ${center.policeOfficer?.name || 'N/A'}
 
       The plan should include crowd control, ballot box security, and communication protocols.
       Keep it under 200 words.
