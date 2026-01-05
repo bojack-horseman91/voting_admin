@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Union, VotingCenter, CenterCategory, AreaType, ImportantPerson, PersonCategory, Upazilla } from '../types';
+import { Union, VotingCenter, CenterCategory, AreaType, ImportantPerson, PersonCategory, Upazilla, Markha } from '../types';
 import * as DB from '../services/db';
 import * as AI from '../services/ai';
-import { Plus, MapPin, Users, Upload, ShieldCheck, FileText, BrainCircuit, Edit2, CheckCircle2, X, AlertTriangle, Shield, Building2, Landmark, Phone, Contact, ArrowUpFromLine, Trash2 } from 'lucide-react';
+import { Plus, MapPin, Users, Upload, ShieldCheck, FileText, BrainCircuit, Edit2, CheckCircle2, X, AlertTriangle, Shield, Building2, Landmark, Phone, Contact, ArrowUpFromLine, Trash2, Stamp, Image as ImageIcon } from 'lucide-react';
 
 interface Props {
   upazillaId: string;
 }
 
 const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
-  const [activeTab, setActiveTab] = useState<'unions' | 'centers' | 'contacts'>('unions');
+  const [activeTab, setActiveTab] = useState<'unions' | 'centers' | 'contacts' | 'markhas'>('unions');
   const [currentUpazilla, setCurrentUpazilla] = useState<Upazilla | null>(null);
   const [unions, setUnions] = useState<Union[]>([]);
   const [centers, setCenters] = useState<VotingCenter[]>([]); // Note: These are now "lite" objects
   const [importantPersons, setImportantPersons] = useState<ImportantPerson[]>([]);
+  const [markhas, setMarkhas] = useState<Markha[]>([]);
   const [selectedUnionId, setSelectedUnionId] = useState<string>('');
   
   // AI State
@@ -38,6 +39,18 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
       category: 'admin',
       ranking: 10
   });
+
+  // Markha Form State
+  const [editingMarkhaId, setEditingMarkhaId] = useState<string | null>(null);
+  const [markhaForm, setMarkhaForm] = useState<Partial<Markha>>({
+      name: '',
+      partyName: '',
+      nomineeName: '',
+      imageUrl: ''
+  });
+  const [selectedMarkhaImage, setSelectedMarkhaImage] = useState<File | null>(null);
+  const [markhaImagePreview, setMarkhaImagePreview] = useState<string>('');
+
 
   // Separate state for file handling to upload only on save
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
@@ -82,6 +95,7 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
         }
         
         fetchPersons();
+        fetchMarkhas();
     } catch (error) {
         console.error("Error fetching data:", error);
     }
@@ -93,6 +107,15 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
           setImportantPersons(persons);
       } catch (e) {
           console.error("Error fetching persons:", e);
+      }
+  }
+
+  const fetchMarkhas = async () => {
+      try {
+          const m = await DB.getMarkhas(upazillaId);
+          setMarkhas(m);
+      } catch (e) {
+          console.error("Error fetching markhas", e);
       }
   }
 
@@ -114,8 +137,11 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
           if (imagePreviewUrl && !imagePreviewUrl.startsWith('http')) {
               URL.revokeObjectURL(imagePreviewUrl);
           }
+          if (markhaImagePreview && !markhaImagePreview.startsWith('http')) {
+              URL.revokeObjectURL(markhaImagePreview);
+          }
       };
-  }, [imagePreviewUrl]);
+  }, [imagePreviewUrl, markhaImagePreview]);
 
   const handleCreateUnion = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -141,6 +167,15 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
           // Create local preview
           const objectUrl = URL.createObjectURL(file);
           setImagePreviewUrl(objectUrl);
+      }
+  };
+
+  const handleMarkhaImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files[0]) {
+          const file = e.target.files[0];
+          setSelectedMarkhaImage(file);
+          const objectUrl = URL.createObjectURL(file);
+          setMarkhaImagePreview(objectUrl);
       }
   };
 
@@ -328,6 +363,69 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
       }
   }
 
+  // --- Markha Logic ---
+
+  const handleSaveMarkha = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setIsSubmitting(true);
+      
+      let finalImageUrl = markhaForm.imageUrl;
+
+      if (selectedMarkhaImage) {
+          try {
+              setUploadingImg(true);
+              finalImageUrl = await DB.uploadImageToImgBB(selectedMarkhaImage, currentUpazilla?.imgbbKey);
+              setUploadingImg(false);
+          } catch (e) {
+              alert("Image upload failed");
+              setIsSubmitting(false);
+              setUploadingImg(false);
+              return;
+          }
+      }
+
+      const markhaData: Markha = {
+          id: editingMarkhaId || crypto.randomUUID(),
+          name: markhaForm.name || '',
+          partyName: markhaForm.partyName || '',
+          nomineeName: markhaForm.nomineeName || '',
+          imageUrl: finalImageUrl || ''
+      };
+
+      try {
+          if (editingMarkhaId) {
+              await DB.updateMarkha(markhaData, upazillaId);
+              setSuccessMsg('Symbol updated successfully');
+          } else {
+              await DB.createMarkha(markhaData, upazillaId);
+              setSuccessMsg('Symbol added successfully');
+          }
+          setEditingMarkhaId(null);
+          setMarkhaForm({ name: '', partyName: '', nomineeName: '', imageUrl: '' });
+          setSelectedMarkhaImage(null);
+          setMarkhaImagePreview('');
+          fetchMarkhas();
+      } catch (e) {
+          alert("Failed to save symbol");
+      }
+      setIsSubmitting(false);
+  }
+
+  const handleEditMarkha = (m: Markha) => {
+      setEditingMarkhaId(m.id);
+      setMarkhaForm({ ...m });
+      setMarkhaImagePreview(m.imageUrl);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  const handleDeleteMarkha = async (id: string) => {
+      if(window.confirm("Delete this symbol?")) {
+          await DB.deleteMarkha(id, upazillaId);
+          fetchMarkhas();
+      }
+  }
+
+
   return (
     <div className="space-y-6">
         {/* Success Message Banner */}
@@ -351,7 +449,7 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
 
         {/* Top Controls */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
                 <button
                     onClick={() => setActiveTab('unions')}
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'unions' ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-50'}`}
@@ -369,6 +467,12 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'contacts' ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-50'}`}
                 >
                     Key Contacts
+                </button>
+                <button
+                    onClick={() => setActiveTab('markhas')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'markhas' ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-50'}`}
+                >
+                    Election Symbols
                 </button>
             </div>
             {unions.length > 0 && activeTab === 'centers' && (
@@ -635,6 +739,140 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
                              </tbody>
                          </table>
                      </div>
+                </div>
+            </div>
+        )}
+
+        {/* --- MARKHAS (SYMBOLS) TAB --- */}
+        {activeTab === 'markhas' && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="md:col-span-1 bg-white p-6 rounded-lg shadow-sm border border-gray-200 h-fit">
+                    <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        {editingMarkhaId ? <Edit2 className="w-5 h-5 text-amber-600"/> : <Stamp className="w-5 h-5 text-blue-500" />} 
+                        {editingMarkhaId ? 'Edit Symbol' : 'Add Election Symbol'}
+                    </h3>
+                    <form onSubmit={handleSaveMarkha} className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Symbol Name (Markha)</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. Boat, Sheaf of Paddy"
+                                value={markhaForm.name}
+                                onChange={e => setMarkhaForm({...markhaForm, name: e.target.value})}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Party Name</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. Awami League"
+                                value={markhaForm.partyName}
+                                onChange={e => setMarkhaForm({...markhaForm, partyName: e.target.value})}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Nominee Name</label>
+                            <input
+                                type="text"
+                                placeholder="Candidate Name"
+                                value={markhaForm.nomineeName}
+                                onChange={e => setMarkhaForm({...markhaForm, nomineeName: e.target.value})}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+                                required
+                            />
+                        </div>
+                        
+                        {/* Image Upload for Symbol */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Symbol Image</label>
+                            <div className="flex items-center gap-2">
+                                <label className="cursor-pointer flex-1 flex justify-center items-center py-2 px-3 border border-gray-300 border-dashed rounded-md bg-gray-50 hover:bg-gray-100 transition-colors">
+                                    <div className="flex flex-col items-center gap-1">
+                                        <ImageIcon className="w-6 h-6 text-gray-400" />
+                                        <span className="text-xs text-gray-600">{selectedMarkhaImage ? 'Change' : 'Select'} Image</span>
+                                    </div>
+                                    <input type="file" className="hidden" accept="image/*" onChange={handleMarkhaImageSelect} />
+                                </label>
+                            </div>
+                            {markhaImagePreview && (
+                                <div className="mt-3 relative w-full h-32 bg-gray-100 rounded-md border border-gray-200 flex items-center justify-center overflow-hidden">
+                                    <img src={markhaImagePreview} alt="Preview" className="h-full object-contain" />
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="pt-2 flex gap-2">
+                            {editingMarkhaId && (
+                                <button
+                                    type="button"
+                                    onClick={() => { 
+                                        setEditingMarkhaId(null); 
+                                        setMarkhaForm({ name: '', partyName: '', nomineeName: '', imageUrl: '' });
+                                        setSelectedMarkhaImage(null);
+                                        setMarkhaImagePreview('');
+                                    }}
+                                    className="flex-1 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
+                                >
+                                    Cancel
+                                </button>
+                            )}
+                            <button
+                                type="submit"
+                                disabled={isSubmitting || uploadingImg}
+                                className={`flex-1 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${editingMarkhaId ? 'bg-amber-600 hover:bg-amber-700' : 'bg-blue-600 hover:bg-blue-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50`}
+                            >
+                                {isSubmitting || uploadingImg ? 'Processing...' : (editingMarkhaId ? 'Update Symbol' : 'Add Symbol')}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div className="md:col-span-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {markhas.map(m => (
+                            <div key={m.id} className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                                <div className="h-32 bg-gray-50 flex items-center justify-center border-b border-gray-100 p-4">
+                                    {m.imageUrl ? (
+                                        <img src={m.imageUrl} alt={m.name} className="h-full object-contain" />
+                                    ) : (
+                                        <Stamp className="w-12 h-12 text-gray-300" />
+                                    )}
+                                </div>
+                                <div className="p-4">
+                                    <h4 className="font-bold text-lg text-gray-900">{m.name}</h4>
+                                    <p className="text-sm font-medium text-blue-600">{m.partyName}</p>
+                                    <p className="text-xs text-gray-500 mt-1">Nominee: {m.nomineeName}</p>
+                                    
+                                    <div className="mt-4 flex justify-end gap-2 border-t border-gray-100 pt-3">
+                                        <button 
+                                            onClick={() => handleEditMarkha(m)}
+                                            className="text-amber-600 hover:bg-amber-50 p-1.5 rounded-md transition-colors"
+                                            title="Edit"
+                                        >
+                                            <Edit2 className="w-4 h-4" />
+                                        </button>
+                                        <button 
+                                            onClick={() => handleDeleteMarkha(m.id)}
+                                            className="text-red-600 hover:bg-red-50 p-1.5 rounded-md transition-colors"
+                                            title="Delete"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    {markhas.length === 0 && (
+                        <div className="bg-white rounded-lg border border-gray-200 border-dashed p-10 text-center">
+                            <Stamp className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                            <p className="text-gray-500">No symbols added yet. Add a party symbol to get started.</p>
+                        </div>
+                    )}
                 </div>
             </div>
         )}
