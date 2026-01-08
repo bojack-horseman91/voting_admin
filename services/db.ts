@@ -64,6 +64,10 @@ export const createUnion = async (union: Union): Promise<void> => {
     await apiCall('/unions', 'POST', union, union.upazillaId);
 };
 
+export const deleteUnion = async (id: string, upazillaId: string): Promise<void> => {
+    await apiCall(`/unions/${id}`, 'DELETE', undefined, upazillaId);
+};
+
 // --- Center Operations (Upazilla Admin) ---
 
 export const getCenters = async (unionId: string, upazillaId: string): Promise<VotingCenter[]> => {
@@ -85,10 +89,9 @@ export const updateCenter = async (center: VotingCenter, upazillaId: string): Pr
     await apiCall(`/centers/${center.id}`, 'PUT', center, upazillaId);
 };
 
-export const deleteCenter = async (_id: string, _upazillaId: string): Promise<void> => {
-    // Implement delete in server if needed
-    return;
-}
+export const deleteCenter = async (id: string, upazillaId: string): Promise<void> => {
+    await apiCall(`/centers/${id}`, 'DELETE', undefined, upazillaId);
+};
 
 // --- Important Persons Operations ---
 
