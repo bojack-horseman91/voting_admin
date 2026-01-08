@@ -224,6 +224,19 @@ app.post('/api/unions', async (req, res) => {
     }
 });
 
+app.delete('/api/unions/:id', async (req, res) => {
+    try {
+        const upazillaId = req.headers['x-upazilla-id'];
+        const conn = await getUpazillaConnection(upazillaId);
+        const Union = conn.model('Union');
+
+        await Union.deleteOne({ id: req.params.id });
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // OPTIMIZED: List View (Name, Address & Category only)
 app.get('/api/centers', async (req, res) => {
     try {
@@ -277,6 +290,19 @@ app.put('/api/centers/:id', async (req, res) => {
         const Center = conn.model('Center');
 
         await Center.findOneAndUpdate({ id: req.params.id }, req.body);
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.delete('/api/centers/:id', async (req, res) => {
+    try {
+        const upazillaId = req.headers['x-upazilla-id'];
+        const conn = await getUpazillaConnection(upazillaId);
+        const Center = conn.model('Center');
+
+        await Center.deleteOne({ id: req.params.id });
         res.json({ success: true });
     } catch (e) {
         res.status(500).json({ error: e.message });
