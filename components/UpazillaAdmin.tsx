@@ -632,12 +632,301 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
             </div>
         )}
 
+        {/* --- IMPORTANT PERSONS TAB --- */}
+        {activeTab === 'contacts' && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="md:col-span-1 bg-white p-6 rounded-lg shadow-sm border border-gray-200 h-fit">
+                     <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        {editingPersonId ? <Edit2 className="w-5 h-5 text-amber-600"/> : <Plus className="w-5 h-5 text-blue-500" />} 
+                        {editingPersonId ? 'Edit Contact' : 'Add Important Person'}
+                    </h3>
+                    <form onSubmit={handleSavePerson} className="space-y-4">
+                         <div>
+                            <label className="block text-sm font-medium text-gray-700">Name</label>
+                            <input
+                                type="text"
+                                value={personForm.name}
+                                onChange={e => setPersonForm({...personForm, name: e.target.value})}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+                                required
+                            />
+                        </div>
+                         <div>
+                            <label className="block text-sm font-medium text-gray-700">Designation</label>
+                            <input
+                                type="text"
+                                value={personForm.designation}
+                                onChange={e => setPersonForm({...personForm, designation: e.target.value})}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Phone</label>
+                            <input
+                                type="text"
+                                value={personForm.phone}
+                                onChange={e => setPersonForm({...personForm, phone: e.target.value})}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+                                required
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                             <div>
+                                <label className="block text-sm font-medium text-gray-700">Category</label>
+                                <select 
+                                    value={personForm.category}
+                                    onChange={e => setPersonForm({...personForm, category: e.target.value as PersonCategory})}
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+                                >
+                                    <option value="admin">Admin</option>
+                                    <option value="police">Police</option>
+                                    <option value="defence">Defence</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Rank (Sequence)</label>
+                                <input
+                                    type="number"
+                                    value={personForm.ranking}
+                                    onChange={e => setPersonForm({...personForm, ranking: parseInt(e.target.value)})}
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+                                    min="1"
+                                />
+                            </div>
+                        </div>
+
+                         <div className="pt-2 flex gap-2">
+                             {editingPersonId && (
+                                 <button
+                                     type="button"
+                                     onClick={() => { setEditingPersonId(null); setPersonForm({ name: '', designation: '', phone: '', category: 'admin', ranking: 10 }) }}
+                                     className="flex-1 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
+                                 >
+                                     Cancel
+                                 </button>
+                             )}
+                            <button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className={`flex-1 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${editingPersonId ? 'bg-amber-600 hover:bg-amber-700' : 'bg-blue-600 hover:bg-blue-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50`}
+                            >
+                                {isSubmitting ? 'Saving...' : (editingPersonId ? 'Update' : 'Add Person')}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div className="md:col-span-2">
+                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                         <div className="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+                             <h4 className="font-bold text-gray-800 flex items-center gap-2">
+                                 <Contact className="w-5 h-5 text-gray-500" /> Directory Listing
+                             </h4>
+                             <span className="text-xs text-gray-500 flex items-center gap-1">
+                                 <ArrowUpFromLine className="w-3 h-3"/> Sorted by Rank
+                             </span>
+                         </div>
+                         <table className="min-w-full divide-y divide-gray-200">
+                             <thead className="bg-gray-50">
+                                 <tr>
+                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">Rank</th>
+                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
+                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                                     <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                 </tr>
+                             </thead>
+                             <tbody className="bg-white divide-y divide-gray-200">
+                                 {importantPersons.map(person => (
+                                     <tr key={person.id} className="hover:bg-gray-50">
+                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-center bg-gray-50">
+                                             {person.ranking}
+                                         </td>
+                                         <td className="px-6 py-4">
+                                             <div className="flex flex-col">
+                                                 <span className="font-bold text-gray-900">{person.name}</span>
+                                                 <span className="text-sm text-gray-500">{person.designation}</span>
+                                                 <div className="mt-1">{getPersonBadge(person.category)}</div>
+                                             </div>
+                                         </td>
+                                         <td className="px-6 py-4 whitespace-nowrap">
+                                             <div className="flex items-center text-sm text-gray-600">
+                                                 <Phone className="w-3 h-3 mr-2 text-gray-400" />
+                                                 {person.phone}
+                                             </div>
+                                         </td>
+                                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <div className="flex justify-end gap-3">
+                                                <button 
+                                                    onClick={() => handleEditPerson(person)}
+                                                    className="text-amber-600 hover:text-amber-900"
+                                                >
+                                                    <Edit2 className="w-4 h-4" />
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleDeletePerson(person.id)}
+                                                    className="text-red-600 hover:text-red-900"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                     </tr>
+                                 ))}
+                                 {importantPersons.length === 0 && (
+                                     <tr>
+                                         <td colSpan={4} className="px-6 py-10 text-center text-gray-500 italic">
+                                             No important contacts added yet.
+                                         </td>
+                                     </tr>
+                                 )}
+                             </tbody>
+                         </table>
+                     </div>
+                </div>
+            </div>
+        )}
+
+        {/* --- MARKHAS (SYMBOLS) TAB --- */}
+        {activeTab === 'markhas' && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="md:col-span-1 bg-white p-6 rounded-lg shadow-sm border border-gray-200 h-fit">
+                    <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        {editingMarkhaId ? <Edit2 className="w-5 h-5 text-amber-600"/> : <Stamp className="w-5 h-5 text-blue-500" />} 
+                        {editingMarkhaId ? 'Edit Symbol' : 'Add Election Symbol'}
+                    </h3>
+                    <form onSubmit={handleSaveMarkha} className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Symbol Name (Markha)</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. Boat, Sheaf of Paddy"
+                                value={markhaForm.name}
+                                onChange={e => setMarkhaForm({...markhaForm, name: e.target.value})}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Party Name</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. Awami League"
+                                value={markhaForm.partyName}
+                                onChange={e => setMarkhaForm({...markhaForm, partyName: e.target.value})}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Nominee Name</label>
+                            <input
+                                type="text"
+                                placeholder="Candidate Name"
+                                value={markhaForm.nomineeName}
+                                onChange={e => setMarkhaForm({...markhaForm, nomineeName: e.target.value})}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
+                                required
+                            />
+                        </div>
+                        
+                        {/* Image Upload for Symbol */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Symbol Image</label>
+                            <div className="flex items-center gap-2">
+                                <label className="cursor-pointer flex-1 flex justify-center items-center py-2 px-3 border border-gray-300 border-dashed rounded-md bg-gray-50 hover:bg-gray-100 transition-colors">
+                                    <div className="flex flex-col items-center gap-1">
+                                        <ImageIcon className="w-6 h-6 text-gray-400" />
+                                        <span className="text-xs text-gray-600">{selectedMarkhaImage ? 'Change' : 'Select'} Image</span>
+                                    </div>
+                                    <input type="file" className="hidden" accept="image/*" onChange={handleMarkhaImageSelect} />
+                                </label>
+                            </div>
+                            {markhaImagePreview && (
+                                <div className="mt-3 relative w-full h-32 bg-gray-100 rounded-md border border-gray-200 flex items-center justify-center overflow-hidden">
+                                    <img src={markhaImagePreview} alt="Preview" className="h-full object-contain" />
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="pt-2 flex gap-2">
+                            {editingMarkhaId && (
+                                <button
+                                    type="button"
+                                    onClick={() => { 
+                                        setEditingMarkhaId(null); 
+                                        setMarkhaForm({ name: '', partyName: '', nomineeName: '', imageUrl: '' });
+                                        setSelectedMarkhaImage(null);
+                                        setMarkhaImagePreview('');
+                                    }}
+                                    className="flex-1 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
+                                >
+                                    Cancel
+                                </button>
+                            )}
+                            <button
+                                type="submit"
+                                disabled={isSubmitting || uploadingImg}
+                                className={`flex-1 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${editingMarkhaId ? 'bg-amber-600 hover:bg-amber-700' : 'bg-blue-600 hover:bg-blue-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50`}
+                            >
+                                {isSubmitting || uploadingImg ? 'Processing...' : (editingMarkhaId ? 'Update Symbol' : 'Add Symbol')}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div className="md:col-span-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {markhas.map(m => (
+                            <div key={m.id} className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                                <div className="h-32 bg-gray-50 flex items-center justify-center border-b border-gray-100 p-4">
+                                    {m.imageUrl ? (
+                                        <img src={m.imageUrl} alt={m.name} className="h-full object-contain" />
+                                    ) : (
+                                        <Stamp className="w-12 h-12 text-gray-300" />
+                                    )}
+                                </div>
+                                <div className="p-4">
+                                    <h4 className="font-bold text-lg text-gray-900">{m.name}</h4>
+                                    <p className="text-sm font-medium text-blue-600">{m.partyName}</p>
+                                    <p className="text-xs text-gray-500 mt-1">Nominee: {m.nomineeName}</p>
+                                    
+                                    <div className="mt-4 flex justify-end gap-2 border-t border-gray-100 pt-3">
+                                        <button 
+                                            onClick={() => handleEditMarkha(m)}
+                                            className="text-amber-600 hover:bg-amber-50 p-1.5 rounded-md transition-colors"
+                                            title="Edit"
+                                        >
+                                            <Edit2 className="w-4 h-4" />
+                                        </button>
+                                        <button 
+                                            onClick={() => handleDeleteMarkha(m.id)}
+                                            className="text-red-600 hover:bg-red-50 p-1.5 rounded-md transition-colors"
+                                            title="Delete"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    {markhas.length === 0 && (
+                        <div className="bg-white rounded-lg border border-gray-200 border-dashed p-10 text-center">
+                            <Stamp className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                            <p className="text-gray-500">No symbols added yet. Add a party symbol to get started.</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        )}
+
         {/* --- CENTERS TAB --- */}
         {activeTab === 'centers' && (
             <div className="space-y-8">
                 {unions.length === 0 ? (
                      <div className="p-4 bg-yellow-50 text-yellow-800 rounded-md border border-yellow-200">
-                         Please create a Union/Pourashava first before adding voting centers.
+                         Please create a Union or Pourashava first before adding voting centers.
                      </div>
                 ) : (
                     <>
