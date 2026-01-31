@@ -34,8 +34,9 @@ const apiCall = async (endpoint: string, method: string = 'GET', body?: any, upa
 
 // --- Upazilla Operations (Super Admin) ---
 
-export const getUpazillas = async (): Promise<Upazilla[]> => {
-    return apiCall('/upazillas');
+export const getUpazillas = async (zilla?: string): Promise<Upazilla[]> => {
+    const qs = zilla ? `?zilla=${encodeURIComponent(zilla)}` : '';
+    return apiCall(`/upazillas${qs}`);
 };
 
 export const getUpazilla = async (id: string): Promise<Upazilla> => {
