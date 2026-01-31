@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Upazilla } from '../types';
 import * as DB from '../services/db';
-import { Plus, Server, Trash2, Database, Key, Edit, Save, X } from 'lucide-react';
+import { Plus, Server, Trash2, Database, Key, Edit, Save, X, Map } from 'lucide-react';
 
 const DEFAULT_MONGO_URL = "mongodb+srv://election_manager:7sHcm5XNdTLBKhy@cluster0.9fv57wd.mongodb.net/UNOs";
 
@@ -12,6 +12,7 @@ const SuperAdmin: React.FC = () => {
   
   const [formData, setFormData] = useState<Partial<Upazilla>>({
     name: '',
+    zilla: 'বরগুনা',
     username: '',
     password: '',
     mongoDbUrl: DEFAULT_MONGO_URL,
@@ -36,6 +37,7 @@ const SuperAdmin: React.FC = () => {
       setEditingId(upazilla.id);
       setFormData({
           name: upazilla.name,
+          zilla: upazilla.zilla || 'বরগুনা',
           username: upazilla.username,
           password: upazilla.password,
           mongoDbUrl: upazilla.mongoDbUrl,
@@ -53,6 +55,7 @@ const SuperAdmin: React.FC = () => {
   const resetForm = () => {
       setFormData({
           name: '',
+          zilla: 'বরগুনা',
           username: '',
           password: '',
           mongoDbUrl: DEFAULT_MONGO_URL,
@@ -72,6 +75,7 @@ const SuperAdmin: React.FC = () => {
         const updatedUpazilla: Upazilla = {
             id: editingId,
             name: formData.name,
+            zilla: formData.zilla || 'বরগুনা',
             username: formData.username,
             password: formData.password,
             mongoDbUrl: formData.mongoDbUrl || DEFAULT_MONGO_URL,
@@ -85,6 +89,7 @@ const SuperAdmin: React.FC = () => {
         const newUpazilla: Upazilla = {
             id: crypto.randomUUID(),
             name: formData.name,
+            zilla: formData.zilla || 'বরগুনা',
             username: formData.username,
             password: formData.password,
             mongoDbUrl: formData.mongoDbUrl || DEFAULT_MONGO_URL,
@@ -129,6 +134,22 @@ const SuperAdmin: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Zilla (District)</label>
+               <div className="mt-1 relative rounded-md shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Map className="h-4 w-4 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md border p-2"
+                    placeholder="e.g. বরগুনা"
+                    value={formData.zilla}
+                    onChange={e => setFormData({ ...formData, zilla: e.target.value })}
+                  />
+                </div>
+            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Upazilla Name</label>
               <input
@@ -237,8 +258,10 @@ const SuperAdmin: React.FC = () => {
                     </div>
                     <div className="ml-4">
                         <p className="text-sm font-medium text-blue-600">{item.name}</p>
-                        <p className="text-xs text-gray-500">Admin: {item.username} | Port: {item.port}</p>
-                        {item.imgbbKey && <span className="text-[10px] bg-green-100 text-green-800 px-1 rounded border border-green-200">Custom Image Key</span>}
+                        <p className="text-xs text-gray-500 flex items-center gap-1">
+                          <Map className="w-3 h-3" /> {item.zilla || 'বরগুনা'}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-0.5">Admin: {item.username}</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
