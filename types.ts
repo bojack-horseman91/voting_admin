@@ -53,6 +53,7 @@ export interface Markha {
 export interface Upazilla {
   id: string;
   name: string;
+  zilla?: string; // Added Zilla (District)
   username: string;
   mongoDbUrl: string;
   port: string;

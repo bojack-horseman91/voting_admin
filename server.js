@@ -49,6 +49,7 @@ mainConnection.on('error', (err) => {
 const UpazillaSchema = new mongoose.Schema({
   id: String,
   name: String,
+  zilla: { type: String, default: 'বরগুনা' }, // Added Zilla field with default
   username: String,
   password: String, // In production, hash this!
   mongoDbUrl: String,
@@ -147,9 +148,17 @@ app.get('/api', (req, res) => {
     });
 });
 
+// Updated: Supports filtering by ?zilla=Name
 app.get('/api/upazillas', async (req, res) => {
     try {
-        const upazillas = await UpazillaModel.find();
+        const { zilla } = req.query;
+        const query = {};
+        
+        if (zilla) {
+            query.zilla = zilla;
+        }
+
+        const upazillas = await UpazillaModel.find(query);
         res.json(upazillas);
     } catch (e) {
         res.status(500).json({ error: e.message });
