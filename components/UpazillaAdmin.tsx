@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Union, VotingCenter, CenterCategory, AreaType, ImportantPerson, PersonCategory, Upazilla, Markha } from '../types';
 import * as DB from '../services/db';
 import * as AI from '../services/ai';
-import { Plus, MapPin, Users, Upload, ShieldCheck, FileText, BrainCircuit, Edit2, CheckCircle2, X, AlertTriangle, Shield, Building2, Landmark, Phone, Contact, ArrowUpFromLine, Trash2, Stamp, Image as ImageIcon } from 'lucide-react';
+import { Plus, MapPin, Users, Upload, ShieldCheck, FileText, BrainCircuit, Edit2, CheckCircle2, X, AlertTriangle, Shield, Building2, Landmark, Phone, Contact, ArrowUpFromLine, Trash2, Stamp, Image as ImageIcon, Stethoscope, Flame, Briefcase } from 'lucide-react';
 
 interface Props {
   upazillaId: string;
@@ -398,9 +398,12 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
 
   const getPersonBadge = (cat: PersonCategory) => {
       switch(cat) {
-          case 'police': return <span className="bg-indigo-100 text-indigo-800 text-xs px-2 py-0.5 rounded-full font-bold">POLICE</span>
-          case 'defence': return <span className="bg-emerald-100 text-emerald-800 text-xs px-2 py-0.5 rounded-full font-bold">DEFENCE</span>
-          default: return <span className="bg-gray-100 text-gray-800 text-xs px-2 py-0.5 rounded-full font-bold">ADMIN</span>
+          case 'police': return <span className="inline-flex items-center gap-1 bg-indigo-100 text-indigo-800 text-xs px-2 py-0.5 rounded-full font-bold"><Shield className="w-3 h-3" /> POLICE</span>
+          case 'defence': return <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 text-xs px-2 py-0.5 rounded-full font-bold"><Shield className="w-3 h-3" /> DEFENCE</span>
+          case 'health': return <span className="inline-flex items-center gap-1 bg-teal-100 text-teal-800 text-xs px-2 py-0.5 rounded-full font-bold"><Stethoscope className="w-3 h-3" /> HEALTH</span>
+          case 'emergency': return <span className="inline-flex items-center gap-1 bg-orange-100 text-orange-800 text-xs px-2 py-0.5 rounded-full font-bold"><Flame className="w-3 h-3" /> EMERGENCY</span>
+          case 'other': return <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-800 text-xs px-2 py-0.5 rounded-full font-bold"><Briefcase className="w-3 h-3" /> OTHER</span>
+          default: return <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-800 text-xs px-2 py-0.5 rounded-full font-bold"><Shield className="w-3 h-3" /> ADMIN</span>
       }
   }
 
@@ -682,6 +685,9 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
                                     <option value="admin">Admin</option>
                                     <option value="police">Police</option>
                                     <option value="defence">Defence</option>
+                                    <option value="health">Health</option>
+                                    <option value="emergency">Emergency</option>
+                                    <option value="other">Other</option>
                                 </select>
                             </div>
                             <div>
