@@ -1,4 +1,4 @@
-import { Upazilla, Union, VotingCenter, ImportantPerson, Markha } from '../types';
+import { Upazilla, Union, VotingCenter, ImportantPerson, Markha, ZillaPerson } from '../types';
 
 // Declare process for TS environment
 declare const process: { env: { IMGBB_KEY?: string; NODE_ENV?: string } };
@@ -55,6 +55,25 @@ export const deleteUpazilla = async (id: string): Promise<void> => {
     await apiCall(`/upazillas/${id}`, 'DELETE');
 }
 
+// --- Zilla Person Operations (Super Admin) ---
+
+export const getZillaPersons = async (zilla?: string): Promise<ZillaPerson[]> => {
+    const qs = zilla ? `?zilla=${encodeURIComponent(zilla)}` : '';
+    return apiCall(`/zilla-persons${qs}`);
+};
+
+export const createZillaPerson = async (person: ZillaPerson): Promise<void> => {
+    await apiCall('/zilla-persons', 'POST', person);
+};
+
+export const updateZillaPerson = async (person: ZillaPerson): Promise<void> => {
+    await apiCall(`/zilla-persons/${person.id}`, 'PUT', person);
+};
+
+export const deleteZillaPerson = async (id: string): Promise<void> => {
+    await apiCall(`/zilla-persons/${id}`, 'DELETE');
+};
+
 // --- Union Operations (Upazilla Admin) ---
 
 export const getUnions = async (upazillaId: string): Promise<Union[]> => {
@@ -94,7 +113,7 @@ export const deleteCenter = async (id: string, upazillaId: string): Promise<void
     await apiCall(`/centers/${id}`, 'DELETE', undefined, upazillaId);
 };
 
-// --- Important Persons Operations ---
+// --- Important Persons Operations (Upazilla) ---
 
 export const getImportantPersons = async (upazillaId: string): Promise<ImportantPerson[]> => {
     return apiCall('/important-persons', 'GET', undefined, upazillaId);
