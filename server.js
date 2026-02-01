@@ -58,6 +58,18 @@ const UpazillaSchema = new mongoose.Schema({
 });
 const UpazillaModel = mainConnection.model('Upazilla', UpazillaSchema);
 
+// Schema for Zilla (District) Level Important Persons (Main DB)
+const ZillaPersonSchema = new mongoose.Schema({
+  id: String,
+  zilla: String, // Filter key
+  name: String,
+  designation: String,
+  phone: String,
+  category: String, // 'admin', 'police', 'defence'
+  ranking: { type: Number, default: 0 }
+});
+const ZillaPersonModel = mainConnection.model('ZillaPerson', ZillaPersonSchema);
+
 // --- Dynamic Schemas ---
 const UnionSchema = new mongoose.Schema({
     id: String,
@@ -203,6 +215,50 @@ app.delete('/api/upazillas/:id', async (req, res) => {
         res.status(500).json({ error: e.message });
     }
 });
+
+// --- ZILLA PERSON ROUTES (Global/Main DB) ---
+
+app.get('/api/zilla-persons', async (req, res) => {
+    try {
+        const { zilla } = req.query;
+        const query = {};
+        if (zilla) query.zilla = zilla;
+        
+        const persons = await ZillaPersonModel.find(query).sort({ ranking: 1 });
+        res.json(persons);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/zilla-persons', async (req, res) => {
+    try {
+        const newPerson = new ZillaPersonModel(req.body);
+        await newPerson.save();
+        res.json(newPerson);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.put('/api/zilla-persons/:id', async (req, res) => {
+    try {
+        await ZillaPersonModel.findOneAndUpdate({ id: req.params.id }, req.body);
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.delete('/api/zilla-persons/:id', async (req, res) => {
+    try {
+        await ZillaPersonModel.deleteOne({ id: req.params.id });
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 
 app.get('/api/unions', async (req, res) => {
     try {

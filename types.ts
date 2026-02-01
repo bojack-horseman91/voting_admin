@@ -31,10 +31,21 @@ export interface Union {
   type?: AreaType;
 }
 
-export type PersonCategory = 'admin' | 'police' | 'defence';
+export type PersonCategory = 'admin' | 'police' | 'defence' | 'health' | 'emergency' | 'other';
 
 export interface ImportantPerson {
   id: string;
+  name: string;
+  designation: string;
+  phone: string;
+  category: PersonCategory;
+  ranking: number;
+}
+
+// New Interface for District Level Persons
+export interface ZillaPerson {
+  id: string;
+  zilla: string; // e.g., 'বরগুনা'
   name: string;
   designation: string;
   phone: string;
