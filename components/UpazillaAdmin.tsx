@@ -1124,16 +1124,16 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
                                 <tbody className="bg-white divide-y divide-gray-200">
                                     {centers.map(center => (
                                         <tr key={center.id} className="hover:bg-gray-50 transition-colors">
-                                            <td className="px-6 py-4 whitespace-nowrap">
+                                            <td className="px-6 py-4">
                                                 <div className="text-sm font-bold text-gray-900">{center.name}</div>
                                                 <div className="mt-1">
                                                     {getCategoryBadge(center.category)}
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-500 flex items-center">
-                                                    <MapPin className="w-4 h-4 mr-1 text-gray-400" />
-                                                    {center.location}
+                                            <td className="px-6 py-4">
+                                                <div className="text-sm text-gray-500 flex items-start max-w-md">
+                                                    <MapPin className="w-4 h-4 mr-1 text-gray-400 flex-shrink-0 mt-0.5" />
+                                                    <span>{center.location}</span>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
