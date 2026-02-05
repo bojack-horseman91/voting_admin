@@ -22,6 +22,7 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Form States
+  const [editingUnionId, setEditingUnionId] = useState<string | null>(null);
   const [newUnionName, setNewUnionName] = useState('');
   const [newAreaType, setNewAreaType] = useState<AreaType>('Union');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -145,21 +146,51 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
       };
   }, [imagePreviewUrl, markhaImagePreview]);
 
-  const handleCreateUnion = async (e: React.FormEvent) => {
+  const handleCreateOrUpdateUnion = async (e: React.FormEvent) => {
     e.preventDefault();
     if(!newUnionName) return;
     setIsSubmitting(true);
-    await DB.createUnion({
-        id: crypto.randomUUID(),
-        upazillaId,
-        name: newUnionName,
-        type: newAreaType
-    });
-    setNewUnionName('');
-    setNewAreaType('Union');
-    setSuccessMsg(`${newAreaType} created successfully in database!`);
-    setIsSubmitting(false);
-    fetchData();
+
+    try {
+        if (editingUnionId) {
+            await DB.updateUnion({
+                id: editingUnionId,
+                upazillaId,
+                name: newUnionName,
+                type: newAreaType
+            });
+            setSuccessMsg(`${newAreaType} updated successfully!`);
+        } else {
+            await DB.createUnion({
+                id: crypto.randomUUID(),
+                upazillaId,
+                name: newUnionName,
+                type: newAreaType
+            });
+            setSuccessMsg(`${newAreaType} created successfully!`);
+        }
+        
+        setNewUnionName('');
+        setNewAreaType('Union');
+        setEditingUnionId(null);
+        fetchData();
+    } catch (err) {
+        alert("Failed to save area.");
+    } finally {
+        setIsSubmitting(false);
+    }
+  };
+
+  const handleEditUnion = (union: Union) => {
+      setEditingUnionId(union.id);
+      setNewUnionName(union.name);
+      setNewAreaType(union.type || 'Union');
+  };
+
+  const handleCancelUnionEdit = () => {
+      setEditingUnionId(null);
+      setNewUnionName('');
+      setNewAreaType('Union');
   };
 
   const handleDeleteUnion = async (id: string, name: string) => {
@@ -170,6 +201,9 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
               if (selectedUnionId === id) {
                   setSelectedUnionId('');
                   setCenters([]);
+              }
+              if (editingUnionId === id) {
+                  handleCancelUnionEdit();
               }
               setSuccessMsg(`"${name}" deleted successfully.`);
               fetchData();
@@ -538,9 +572,10 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="md:col-span-1 bg-white p-6 rounded-lg shadow-sm border border-gray-200 h-fit">
                     <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <Plus className="w-5 h-5 text-blue-500" /> Add Area
+                         {editingUnionId ? <Edit2 className="w-5 h-5 text-amber-600"/> : <Plus className="w-5 h-5 text-blue-500" />} 
+                         {editingUnionId ? 'Edit Area' : 'Add Area'}
                     </h3>
-                    <form onSubmit={handleCreateUnion} className="space-y-4">
+                    <form onSubmit={handleCreateOrUpdateUnion} className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Area Type</label>
                              <div className="mt-1 flex gap-4">
@@ -579,13 +614,25 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
                                 required
                             />
                         </div>
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-                        >
-                            {isSubmitting ? 'Saving...' : 'Create Area'}
-                        </button>
+
+                         <div className="pt-2 flex gap-2">
+                            {editingUnionId && (
+                                <button
+                                    type="button"
+                                    onClick={handleCancelUnionEdit}
+                                    className="flex-1 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
+                                >
+                                    Cancel
+                                </button>
+                            )}
+                            <button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className={`flex-1 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${editingUnionId ? 'bg-amber-600 hover:bg-amber-700' : 'bg-blue-600 hover:bg-blue-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50`}
+                            >
+                                {isSubmitting ? 'Saving...' : (editingUnionId ? 'Update Area' : 'Create Area')}
+                            </button>
+                        </div>
                     </form>
                     
                     <div className="mt-8 pt-6 border-t border-gray-100">
@@ -606,7 +653,7 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
 
                 <div className="md:col-span-2 space-y-4">
                      {unions.map(union => (
-                         <div key={union.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex justify-between items-center">
+                         <div key={union.id} className={`bg-white p-4 rounded-lg shadow-sm border flex justify-between items-center transition-colors ${editingUnionId === union.id ? 'border-amber-300 ring-1 ring-amber-300 bg-amber-50' : 'border-gray-200'}`}>
                              <div>
                                  <div className="flex items-center gap-2">
                                      <h4 className="font-bold text-gray-800">{union.name}</h4>
@@ -617,8 +664,15 @@ const UpazillaAdmin: React.FC<Props> = ({ upazillaId }) => {
                                  <p className="text-sm text-gray-500 mt-1">Managed via Backend</p>
                              </div>
                              <div className="flex gap-2">
-                                 <button onClick={() => { setSelectedUnionId(union.id); setActiveTab('centers'); }} className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                                 <button onClick={() => { setSelectedUnionId(union.id); setActiveTab('centers'); }} className="text-sm text-blue-600 hover:text-blue-800 font-medium mr-2">
                                      Manage Centers &rarr;
+                                 </button>
+                                 <button 
+                                    onClick={() => handleEditUnion(union)}
+                                    className="text-amber-600 hover:bg-amber-100 p-2 rounded transition-colors"
+                                    title="Edit Area"
+                                >
+                                     <Edit2 className="w-4 h-4"/>
                                  </button>
                                  <button onClick={() => handleDeleteUnion(union.id, union.name)} className="text-red-500 hover:bg-red-50 p-2 rounded transition-colors" title="Delete Area">
                                      <Trash2 className="w-4 h-4"/>
