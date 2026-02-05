@@ -289,6 +289,19 @@ app.post('/api/unions', async (req, res) => {
     }
 });
 
+app.put('/api/unions/:id', async (req, res) => {
+    try {
+        const upazillaId = req.headers['x-upazilla-id'];
+        const conn = await getUpazillaConnection(upazillaId);
+        const Union = conn.model('Union');
+
+        await Union.findOneAndUpdate({ id: req.params.id }, req.body);
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 app.delete('/api/unions/:id', async (req, res) => {
     try {
         const upazillaId = req.headers['x-upazilla-id'];
