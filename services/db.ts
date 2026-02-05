@@ -84,6 +84,10 @@ export const createUnion = async (union: Union): Promise<void> => {
     await apiCall('/unions', 'POST', union, union.upazillaId);
 };
 
+export const updateUnion = async (union: Union): Promise<void> => {
+    await apiCall(`/unions/${union.id}`, 'PUT', union, union.upazillaId);
+};
+
 export const deleteUnion = async (id: string, upazillaId: string): Promise<void> => {
     await apiCall(`/unions/${id}`, 'DELETE', undefined, upazillaId);
 };
