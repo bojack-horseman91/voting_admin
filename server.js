@@ -102,10 +102,11 @@ const CenterSchema = new mongoose.Schema({
 
 const ImportantPersonSchema = new mongoose.Schema({
     id: String,
+    upazillaId: String, // Added for isolation in shared DBs
     name: String,
     designation: String,
     phone: String,
-    category: String, // 'admin', 'police', 'defence'
+    category: String, // 'admin', 'police', 'defence', 'health', 'emergency', 'other'
     ranking: { type: Number, default: 0 }
 });
 
@@ -395,8 +396,20 @@ app.get('/api/important-persons', async (req, res) => {
         const conn = await getUpazillaConnection(upazillaId);
         const ImportantPerson = conn.model('ImportantPerson');
 
-        // Sort by ranking (ascending)
-        const persons = await ImportantPerson.find().sort({ ranking: 1 });
+        // SMART FILTER: 
+        // 1. Show items specifically belonging to this upazilla (upazillaId match).
+        // 2. OR show items with NO upazillaId (Legacy data in shared database).
+        // This allows migration: User sees legacy data, edits it, system saves it with new ID, 
+        // effectively 'moving' it to their view exclusively.
+        const query = {
+            $or: [
+                { upazillaId: upazillaId },
+                { upazillaId: { $exists: false } },
+                { upazillaId: null }
+            ]
+        };
+
+        const persons = await ImportantPerson.find(query).sort({ ranking: 1 });
         res.json(persons);
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -409,7 +422,8 @@ app.post('/api/important-persons', async (req, res) => {
         const conn = await getUpazillaConnection(upazillaId);
         const ImportantPerson = conn.model('ImportantPerson');
 
-        const newPerson = new ImportantPerson(req.body);
+        // Enforce Upazilla ID on creation
+        const newPerson = new ImportantPerson({ ...req.body, upazillaId });
         await newPerson.save();
         res.json(newPerson);
     } catch (e) {
@@ -423,7 +437,11 @@ app.put('/api/important-persons/:id', async (req, res) => {
         const conn = await getUpazillaConnection(upazillaId);
         const ImportantPerson = conn.model('ImportantPerson');
 
-        await ImportantPerson.findOneAndUpdate({ id: req.params.id }, req.body);
+        // Enforce Upazilla ID on update (Claims the record if it was legacy)
+        await ImportantPerson.findOneAndUpdate(
+            { id: req.params.id }, 
+            { ...req.body, upazillaId }
+        );
         res.json({ success: true });
     } catch (e) {
         res.status(500).json({ error: e.message });
